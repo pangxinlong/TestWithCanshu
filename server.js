@@ -1,7 +1,7 @@
 // 请求(require)一个 nodejs 自带的 http模块
 // 请求(require)一个 nodejs 自带的 url解析模块
 var http = require("http"),
-  url = require("url");
+    url = require("url");
 
 // console.log(url);
 
@@ -11,30 +11,32 @@ var http = require("http"),
 
 function start(route, handle) {
 
-  function onRequest(request, response) {
+    function onRequest(request, response) {
 
-      // 获取请求路径
-    var pathname = url.parse(request.url).pathname;
+        // 获取请求路径
+        var pathname = url.parse(request.url).pathname;
 
-    // 关闭nodejs 默认访问 favicon.ico
-    if (!pathname.indexOf('/favicon.ico')) {
-      return; 
-    };
+        console.log(pathname);
 
-    // 收到来自 pathname 的请求
-    console.log("Request for " + pathname + " received.");
+        // 关闭nodejs 默认访问 favicon.ico
+        if (!pathname.indexOf('/favicon.ico')) {
+            return;
+        }
 
-    // 路由器处理
-    route(handle, pathname,request,response);
+        // 收到来自 pathname 的请求
+        console.log("Request for " + pathname + " received.");
 
-    // 返回数据
-      //   response.writeHead(200, {"Content-type": "text/plain"});
- //   response.write("Hello world!");
- //   response.end();
-  }
+        // 路由器处理
+        route(handle, pathname, request, response);
 
-  http.createServer(onRequest).listen(8888);
-  console.log("Server has start!");
+        // 返回数据
+        //   response.writeHead(200, {"Content-type": "text/plain"});
+        //   response.write("Hello world!");
+        //   response.end();
+    }
+
+    http.createServer(onRequest).listen(8888);
+    console.log("Server has start!");
 }
 
 // 开放接口

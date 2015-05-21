@@ -38,5 +38,7 @@ handle["/show"]=requestHandlers.show;
 
 handle["/registration_activation"]=requestHandlers.registration_activation;
 handle["/registration_activation_post"]=requestHandlers.registration_activation_post;
+
+
 // 传入路由模块方法, 路径处理方法
 server.start(router.route, handle);

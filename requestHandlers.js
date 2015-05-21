@@ -182,7 +182,7 @@ function registration(request, response) {
                 info = qs.parse(info);
                 response.setHeader('content-type', 'application/Json ;charset=UTF-8');
                 //锁定参数字段
-                if (info.type != null && info.user_id != null && info.pwd != null && info.name != null && info.nickname!=null && info.sex != null && info.professional != null && info.icon_path != null&&info.contact_information!=null) {
+                if (info.type != null && info.user_id != null && info.pwd != null && info.name != null && info.nickname != null && info.sex != null && info.professional != null && info.icon_path != null && info.contact_information != null && info.grade != null) {
                     //检测注册账户类别
                     if (info.type == 1) {
                         info.user_id = "a" + info.user_id;
@@ -210,8 +210,8 @@ function registration(request, response) {
                                     // }
                                     //插入数据
                                     console.log('插入数据');
-                                    var sql = "insert into user set user_id=?, password=?,name=?,nickname=?,sex=?,professional=?,type=?,state=?,icon=?,contact_information=?",
-                                        values = [info.user_id, info.pwd, info.name, info.nickname, info.sex, info.professional, info.type, state, info.icon_path,info.contact_information];
+                                    var sql = "insert into user set user_id=?, password=?,name=?,nickname=?,sex=?,professional=?,type=?,state=?,icon=?,contact_information=?,info.grade=?",
+                                        values = [info.user_id, info.pwd, info.name, info.nickname, info.sex, info.professional, info.type, info.state, info.icon_path, info.contact_information, info.info.grade];
                                     client.query(sql, values, function (error, res) {
                                         if (error) {
                                             console.log("插入记录出错: " + error.message);
@@ -227,11 +227,11 @@ function registration(request, response) {
                         }
                     );
                 } else {
-                    response.end('{\"State\":\"4000\",\"Message\":\"Parameter error\"');
+                    response.end('{\"State\":\"4000\",\"Message\":\"Parameter error\"}');
                 }
             })
     } else {
-        response.end('{\"State\":\"4001\",\"Message\":\"Request error\"');
+        response.end('{\"State\":\"4001\",\"Message\":\"Request error\"}');
     }
 
 }
@@ -328,7 +328,7 @@ function query_acount(request, response) {
 
                             if (results) {
                                 console.log(results);
-                                response.end('{\"State\":\"0\",\"Message\":\"success\",\"result\":' + JSON.stringify(results)) + '}';
+                                response.end('{\"State\":\"0\",\"Message\":\"success\",\"result\":' + JSON.stringify(results) + '}');
                             }
                             client.end();
                         }
@@ -410,11 +410,11 @@ function change_acount(request, response) {
 
                 info = qs.parse(info);
                 response.setHeader('content-type', 'application/Json ;charset=UTF-8');
-                if (info.user_id != null && info.pwd != null && info.nickname != null, info.sex != null && info.professional != null && info.icon_path != null) {
+                if (info.user_id != null && info.pwd != null && info.nickname != null, info.sex != null && info.professional != null && info.icon_path != null && info.grade != null && info.contact_information != null) {
                     client.query("use " + TEST_DATABASE);
                     //查询数据库             ',name=\''+info.name+'\
                     client.query(
-                            'update ' + TEST_TABLE + ' set  password=\'' + info.pwd + '\',nickname=\'' + info.nickname + '\',sex=\'' + info.sex + '\',professional=\'' + info.professional + '\',icon=\'' + info.icon_path + '\' where user_id=' + info.user_id,
+                            'update ' + TEST_TABLE + ' set  password=\'' + info.pwd + '\',nickname=\'' + info.nickname + '\',sex=\'' + info.sex + '\',professional=\'' + info.professional + '\',icon=\'' + info.icon_path + '\',grade=\'' + info.grade + '\',contact_information=\'' + info.contact_information + '\' where user_id=\'' + info.user_id + '\'',
                         function selectCb(err, results) {
                             if (err) {
                                 throw err;
@@ -429,9 +429,8 @@ function change_acount(request, response) {
                         }
                     );
                 } else {
-
+                    response.end('{\"State\":\"4000\",\"Message\":\"Parameter error\"}');
                 }
-                response.end('{\"State\":\"4000\",\"Message\":\"Parameter error\"');
             })
     } else {
         response.end('{\"State\":\"4001\",\"Message\":\"Request error\"');
@@ -511,11 +510,12 @@ function query_activity(request, response) {
 
             .addListener('end', function () {
 
-                info = qs.parse(info);
                 response.setHeader('content-type', 'application/Json ;charset=UTF-8');
+                var pageSize=4;
+                info = qs.parse(info);
 
-                //默认安时间排序
-                var sql = 'select * from ' + TEST_TABLE + ' order by date desc';
+                //默认安时间排
+                var sql = 'select * from ' + TEST_TABLE + ' order by date desc limit 1,'+info.pageposition;
                 //按用户id查询
                 if (info.user_id != null) {
                     sql = 'select * from ' + TEST_TABLE + ' where user_id=' + info.user_id + ' order by date desc';
@@ -544,8 +544,11 @@ function query_activity(request, response) {
                         }
 
                         if (results) {
-                            console.log(results)
-                            response.end('{\"State\":\"0\",\"Message\":\"success\",\"result\":' + JSON.stringify(results) + '}');
+                            console.log(results);
+                            console.log(JSON.stringify(results));
+                            var str = '{\"State\":\"0\",\"Message\":\"success\",\"result\":' + JSON.stringify(results) + '}';
+
+                            response.end(str);
                         }
                         client.end();
                     }
@@ -623,7 +626,7 @@ function create_activity(request, response) {
                 info = qs.parse(info);
                 response.setHeader('content-type', 'application/Json ;charset=UTF-8');
 
-                if (info.user_id != null && info.name != null && info.activiy_type != null && info.title != null && info.content != null && info.date != null && info.contact_information != null && info.image_path != null) {
+                if (info.user_id != null && info.name != null && info.activity_type != null && info.title != null && info.content != null && info.date != null && info.contact_information != null && info.image_path != null) {
                     var sql = 'insert into ' + TEST_TABLE + ' set activity_id=?, user_id=?, name=?, activity_type=?, title=?, content=?, date=?, contact_information=?, image_path=?',
                         values = [info.user_id + info.date, info.user_id, info.name, info.activity_type, info.title, info.content, info.date, info.contact_information, info.image_path];
                     client.query("use " + TEST_DATABASE);
@@ -636,7 +639,7 @@ function create_activity(request, response) {
                             }
 
                             if (results) {
-                                console.log(results)
+                                console.log(results);
                                 response.end('{\"State\":\"0\",\"Message\":\"success\"}');
                             }
                             client.end();
@@ -738,7 +741,7 @@ function activity_detail(request, response) {
                             }
 
                             if (results) {
-                                console.log(results)
+                                console.log(results);
                                 response.end('{\"State\":\"0\",\"Message\":\"success\",\"result\":' + JSON.stringify(results) + '}');
                             }
                             client.end();
@@ -903,7 +906,7 @@ function save_image(request, response) {
      */
     //    fs.renameSync(info.file.path, "/Users/password/MyJs/Test/RequireDemo/TestWithCanshu/image/test.png"); //winodw认的路径，nodejs的安装路径
     var user_Id = "", date = "", new_path = "";
-
+    var real_path = "";
     var fs = require("fs"), formidable = require("formidable");
     var form = new formidable.IncomingForm();
     console.log("about to parse");
@@ -928,14 +931,15 @@ function save_image(request, response) {
 //                } else {
 //                    response.end('{\"State\":4000,\"Message\":\"Parameter error\"}');
 //                }
-                new_path = "/Users/password/MyJs/Test/RequireDemo/TestWithCanshu/image/" +files.file.name;
+                new_path = "/Users/password/MyJs/Test/RequireDemo/TestWithCanshu/image/" + files.file.name;
                 fs.renameSync(files.file.path, new_path); //winodw认的路径，nodejs的安装路径
-                response.end('{\"State\":\"0\",\"Message\":\"success\",\"results\":{\"image_path\":'+JSON.stringify(new_path)+'}}');//[image:' + new_path + ']
+                real_path = "/image/" + files.file.name;
+                response.end('{\"State\":\"0\",\"Message\":\"success\",\"results\":{\"image_path\":' + JSON.stringify(real_path) + '}}');//[image:' + new_path + ']
             } else {
                 response.end('{\"State\":\"4000\",\"Message\":\"Parameter error\"}');
             }
-        }else{
-            response.end('{\"State\":\"0\",\"Message\":\"success\",\"results\":{\"image_path\":'+JSON.stringify(new_path)+'}}');
+        } else {
+            response.end('{\"State\":\"0\",\"Message\":\"success\",\"results\":{\"image_path\":' + JSON.stringify(real_path) + '}}');
         }
         /*
          var fs = require("fs"),formidable = require("formidable");
@@ -1003,8 +1007,6 @@ function show(request, response) {
     });
 }
 
-
-
 /**
  *  **************注册账号激活****************
  **/
@@ -1049,7 +1051,7 @@ function registration_activation(request, response) {
                     client.query("use " + TEST_DATABASE);
                     //查询数据库
                     client.query(
-                            'update ' + TEST_TABLE + ' set state='+state+' where user_id=\'' + info.user_id + '\'',
+                            'update ' + TEST_TABLE + ' set state=' + state + ' where user_id=\'' + info.user_id + '\'',
                         function selectCb(err, results) {
                             if (err) {
                                 throw err;
@@ -1083,7 +1085,7 @@ function registration_activation_post(request, response) {
 
         request.writeHead(200, {'Content-Type': 'text/html', 'charset': 'UTF-8'});
 
-        var html = '<html><head><h1>请输入要激活的账号</h1></head>'+
+        var html = '<html><head><h1>请输入要激活的账号</h1></head>' +
             '<meta http-equiv="content-type" content="text/html; charset=UTF-8" /><body>' +
             '<form action="/registration_activation" method="post">' +
             'userid:<input type="text" name="user_id"> </br>' +
@@ -1093,6 +1095,7 @@ function registration_activation_post(request, response) {
         request.end(html);
 
     }
+
     return firstPage(response);
 }
 
@@ -1128,5 +1131,7 @@ exports.save_image = save_image;
 exports.image_post = image_post;
 exports.show = show;
 
-exports.registration_activation=registration_activation;
-exports.registration_activation_post=registration_activation_post;
+exports.registration_activation = registration_activation;
+exports.registration_activation_post = registration_activation_post;
+
+
