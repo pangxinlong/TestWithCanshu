@@ -1,4 +1,49 @@
-//存放不同得处理程序，和请求得url相对应
+/**
+ *  信鸽推送
+ * @type {exports}
+ */
+var Xinge = require('lib/Xinge');
+
+var accessId  = 2100109886;//2100003306
+var secretKey = '2be337a420e1095cd860515df87b85c3';//46cfadd7101f1dc4d1e2eee5e07632fe
+var XingeApp = new Xinge.XingeApp(accessId, secretKey);
+
+//Android message start.
+var style = new Xinge.Style();
+style.ring = 1;
+style.vibrate = 0;
+style.ringRaw = 'a';
+style.smallIcon = 'b';
+style.builderId = 77;
+
+var action = new Xinge.ClickAction();
+action.actionType = Xinge.ACTION_TYPE_ACTIVITY;
+//action.packageName.packageName = 'com.demo.xg';
+//action.packageName.packageDownloadUrl = 'http://a.com';
+//action.packageName.confirm = 1;
+
+var androidMessage = new Xinge.AndroidMessage();
+androidMessage.type = Xinge.MESSAGE_TYPE_NOTIFICATION;
+//androidMessage.title = '有新消息了';
+//androidMessage.content = 'v';
+androidMessage.style = style;
+androidMessage.action = action;
+androidMessage.sendTime = Date.parse('2014-02-19 15:33:30') / 1000;
+androidMessage.expireTime = 0;
+//androidMessage.acceptTime.push(new Xinge.TimeInterval(0, 0, 23, 59));
+//androidMessage.customContent = {
+//	'name': 'huangnaiang'
+//};
+androidMessage.multiPkg = 0;
+//androidMessage.loopTimes = 3;
+//androidMessage.loopInterval = 2;
+//And message end.
+
+var content;
+
+/**
+ * 存放不同得处理程序，和请求得url相对应
+ */
 function start(response) {
     console.log("Request handler 'start' was called.");
 }
@@ -86,6 +131,8 @@ function login(request, response) {
                                         if ((results[0].password == info.pwd)) {
                                             response.end('{\"State\":\"0\",\"Message\":\"success\"}');
                                             console.log("%s", "success!");
+
+
                                         } else {
                                             response.end('{\"State\":\"1001\",\"Message\":\"密码错误\"}');
                                         }
@@ -515,21 +562,21 @@ function query_activity(request, response) {
                 info = qs.parse(info);
 
                 //默认安时间排
-                var sql = 'select * from ' + TEST_TABLE + ' order by date desc limit 1,'+info.pageposition;
+                var sql = 'select * from ' + TEST_TABLE + ' order by date desc limit ' +info.pagestart+','+info.pageposition;
                 //按用户id查询
                 if (info.user_id != null) {
-                    sql = 'select * from ' + TEST_TABLE + ' where user_id=' + info.user_id + ' order by date desc';
+                    sql = 'select * from ' + TEST_TABLE + ' where user_id=' + info.user_id + ' order by date desc limit ' +info.pagestart+','+info.pageposition;
                     console.log('type=======' + info.user_id);
                 }
                 //按用户类型排序
                 if (info.type != null) {
-                    sql = 'select * from activity where user_id in (select user_id from user where type=' + info.type + ') order by date desc';
+                    sql = 'select * from activity where user_id in (select user_id from user where type=' + info.type + ') order by date desc limit ' +info.pagestart+ ','+info.pageposition;
                     console.log('type=======' + info.type);
 
                 }
                 //按活动类型排序
                 if (info.activity_type != null) {
-                    sql = 'select * from ' + TEST_TABLE + ' where activity_type=' + info.activity_type + ' order by date desc';
+                    sql = 'select * from ' + TEST_TABLE + ' where activity_type=' + info.activity_type + ' order by date desc limit ' +info.pagestart+','+info.pageposition;
                     console.log('activity_type=======' + info.activity_type);
 
                 }
@@ -641,6 +688,14 @@ function create_activity(request, response) {
                             if (results) {
                                 console.log(results);
                                 response.end('{\"State\":\"0\",\"Message\":\"success\"}');
+
+                                androidMessage.content =info.content;
+                                androidMessage.title = info.title;
+                                //推送消息给指定设备
+                                XingeApp.pushToSingleDevice('75f772f9281ed41c43abaa6dddfe56e23f528bcc', androidMessage, function(err, result){//29c38d06591ed0e643c48a0092f495a2a1c91ae9   Xinge.IOS_ENV_DEV,
+                                    console.log(result);
+                                });
+
                             }
                             client.end();
                         }
